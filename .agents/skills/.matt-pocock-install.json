@@ -1,0 +1,12 @@
+{
+  "source": "mattpocock/skills",
+  "commit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+  "observed_plugin_version": "1.2.0",
+  "installer": "skills@1.5.20",
+  "agent": "codex",
+  "mode": "project-copy",
+  "scope": "promoted-plugin-skills",
+  "skill_count": 22,
+  "node": "22.23.1",
+  "runner": "ubuntu-24.04"
+}
