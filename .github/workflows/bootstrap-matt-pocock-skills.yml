@@ -1,0 +1,64 @@
+name: Bootstrap Matt Pocock skills
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bootstrap-matt-pocock-skills.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned Matt Pocock skills for Codex-compatible project use
+        env:
+          DISABLE_TELEMETRY: '1'
+          MATT_SKILLS_COMMIT: '2ab958093e83e0ec752e6c1c5932da465bf23e0c'
+        run: |
+          npx --yes skills@latest add "https://github.com/mattpocock/skills/tree/${MATT_SKILLS_COMMIT}" --skill '*' --agent codex --copy --yes
+
+      - name: Verify repo-local skills exist
+        run: |
+          test -d .agents/skills
+          test -f .agents/skills/setup-matt-pocock-skills/SKILL.md
+          test -f .agents/skills/ask-matt/SKILL.md
+          test -f .agents/skills/implement/SKILL.md
+          test -f .agents/skills/code-review/SKILL.md
+          count=$(find .agents/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
+          echo "Installed skill definitions: ${count}"
+          test "$count" -ge 22
+
+      - name: Record installation metadata
+        run: |
+          cat > .agents/skills/.matt-pocock-install.json <<'JSON'
+          {
+            "source": "mattpocock/skills",
+            "commit": "2ab958093e83e0ec752e6c1c5932da465bf23e0c",
+            "observed_plugin_version": "1.2.0",
+            "installer": "skills@latest",
+            "agent": "codex",
+            "mode": "project-copy"
+          }
+          JSON
+
+      - name: Commit generated repo-local skills
+        run: |
+          if git diff --quiet -- .agents/skills && git diff --cached --quiet; then
+            echo 'No skill changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .agents/skills
+          git commit -m 'chore: install pinned Matt Pocock skills'
+          git push
