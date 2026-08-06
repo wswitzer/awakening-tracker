@@ -31,22 +31,45 @@ jobs:
           git -C /tmp/matt-pocock-skills checkout --detach "$MATT_SKILLS_COMMIT"
           test "$(git -C /tmp/matt-pocock-skills rev-parse HEAD)" = "$MATT_SKILLS_COMMIT"
 
-      - name: Install pinned Matt Pocock skills for Codex-compatible project use
+      - name: Install pinned promoted Matt Pocock skills for Codex-compatible project use
         env:
           DISABLE_TELEMETRY: '1'
         run: |
-          npx --yes skills@latest add /tmp/matt-pocock-skills --skill '*' --agent codex --copy --yes
+          npx --yes skills@latest add /tmp/matt-pocock-skills \
+            --agent codex --copy --yes \
+            --skill ask-matt \
+            --skill diagnosing-bugs \
+            --skill grill-with-docs \
+            --skill triage \
+            --skill improve-codebase-architecture \
+            --skill setup-matt-pocock-skills \
+            --skill tdd \
+            --skill to-spec \
+            --skill to-tickets \
+            --skill wayfinder \
+            --skill implement \
+            --skill prototype \
+            --skill research \
+            --skill domain-modeling \
+            --skill codebase-design \
+            --skill code-review \
+            --skill resolving-merge-conflicts \
+            --skill grill-me \
+            --skill grilling \
+            --skill handoff \
+            --skill teach \
+            --skill writing-great-skills
 
-      - name: Verify repo-local skills exist
+      - name: Verify exact promoted skill set exists
         run: |
-          test -d .agents/skills
-          test -f .agents/skills/setup-matt-pocock-skills/SKILL.md
-          test -f .agents/skills/ask-matt/SKILL.md
-          test -f .agents/skills/implement/SKILL.md
-          test -f .agents/skills/code-review/SKILL.md
-          count=$(find .agents/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
-          echo "Installed skill definitions: ${count}"
-          test "$count" -ge 22
+          expected='ask-matt code-review codebase-design diagnosing-bugs domain-modeling grill-me grill-with-docs grilling handoff implement improve-codebase-architecture prototype research resolving-merge-conflicts setup-matt-pocock-skills tdd teach to-spec to-tickets triage wayfinder writing-great-skills'
+          actual=$(find .agents/skills -mindepth 2 -maxdepth 2 -name SKILL.md -printf '%h\n' | xargs -n1 basename | sort | tr '\n' ' ' | sed 's/ $//')
+          echo "Expected: $expected"
+          echo "Actual:   $actual"
+          test "$actual" = "$expected"
+          for skill in $expected; do
+            test -f ".agents/skills/$skill/SKILL.md"
+          done
 
       - name: Record installation metadata
         run: |
@@ -58,18 +81,20 @@ jobs:
             "observed_plugin_version": "1.2.0",
             "installer": "skills@latest",
             "agent": "codex",
-            "mode": "project-copy"
+            "mode": "project-copy",
+            "scope": "promoted-plugin-skills",
+            "skill_count": 22
           }
           JSON
 
       - name: Commit generated repo-local skills
         run: |
-          if git diff --quiet -- .agents/skills && git diff --cached --quiet; then
-            echo 'No skill changes to commit.'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .agents/skills
+          if git diff --cached --quiet; then
+            echo 'No skill changes to commit.'
+            exit 0
+          fi
           git commit -m 'chore: install pinned Matt Pocock skills'
           git push origin HEAD:${{ github.head_ref || github.ref_name }}
