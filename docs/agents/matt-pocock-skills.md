@@ -6,22 +6,32 @@ Pinned upstream commit observed during bootstrap: `2ab958093e83e0ec752e6c1c5932d
 
 Promoted upstream plugin version observed during bootstrap: `1.2.0`
 
+Pinned `skills` installer version: `1.5.20`
+
 ## Installation
 
-Install repo-local copies from the repository root with:
+The canonical reproducible bootstrap is `.github/workflows/bootstrap-matt-pocock-skills.yml`. It clones the upstream repository, checks out the exact pinned commit, and installs the exact promoted skill set using the pinned installer version.
+
+For a local equivalent, use the same pinned source checkout and run:
 
 ```bash
-npx skills@latest add mattpocock/skills
+npx skills@1.5.20 add /path/to/pinned/mattpocock-skills \
+  --agent codex --copy --yes \
+  --skill <each promoted skill listed by the bootstrap workflow>
 ```
 
-The repo-local installation is intentional: skills should be versioned with this project and may be adapted where the research harness needs stricter scientific behavior.
+Do not replace the pinned source or installer with `latest` in a reproducibility-sensitive workflow.
 
-After installation, run the `setup-matt-pocock-skills` skill once for this repository and preserve the following configuration:
+The repo-local installation is intentional: skills are versioned with this project and may later be adapted where the research harness needs stricter scientific behavior.
+
+The `setup-matt-pocock-skills` repository configuration is:
 
 - Issue tracker: GitHub Issues for `wswitzer/awakening-tracker`
 - Domain layout: single-context (`CONTEXT.md` + `docs/adr/`)
 - Root agent instructions: `AGENTS.md`
 - Default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`
+
+The concrete setup files are under `docs/agents/`.
 
 ## Skills expected to be used by this project
 
@@ -39,4 +49,4 @@ After installation, run the `setup-matt-pocock-skills` skill once for this repos
 
 ## Update policy
 
-Do not silently update upstream skills during an in-progress confirmatory research protocol. Skill updates can alter agent behavior and therefore may affect reproducibility. Record the previous and new upstream versions/commits, run harness regression evals, and promote the update deliberately.
+Do not silently update upstream skills or the installer during an in-progress confirmatory research protocol. Either can alter agent behavior and therefore affect reproducibility. Record the previous and new upstream versions/commits and installer version, run harness regression evals, and promote the update deliberately.
