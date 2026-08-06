@@ -23,12 +23,19 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Fetch pinned Matt Pocock skills source
+        env:
+          MATT_SKILLS_COMMIT: '2ab958093e83e0ec752e6c1c5932da465bf23e0c'
+        run: |
+          git clone https://github.com/mattpocock/skills.git /tmp/matt-pocock-skills
+          git -C /tmp/matt-pocock-skills checkout --detach "$MATT_SKILLS_COMMIT"
+          test "$(git -C /tmp/matt-pocock-skills rev-parse HEAD)" = "$MATT_SKILLS_COMMIT"
+
       - name: Install pinned Matt Pocock skills for Codex-compatible project use
         env:
           DISABLE_TELEMETRY: '1'
-          MATT_SKILLS_COMMIT: '2ab958093e83e0ec752e6c1c5932da465bf23e0c'
         run: |
-          npx --yes skills@latest add "https://github.com/mattpocock/skills/tree/${MATT_SKILLS_COMMIT}" --skill '*' --agent codex --copy --yes
+          npx --yes skills@latest add /tmp/matt-pocock-skills --skill '*' --agent codex --copy --yes
 
       - name: Verify repo-local skills exist
         run: |
