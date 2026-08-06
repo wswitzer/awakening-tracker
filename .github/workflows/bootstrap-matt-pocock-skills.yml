@@ -1,20 +1,23 @@
 name: Bootstrap Matt Pocock skills
 
 on:
-  push:
+  pull_request:
     paths:
-      - '.github/workflows/bootstrap-matt-pocock-skills.yml'
+      - '.bootstrap/skills-request'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   install:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - uses: actions/setup-node@v4
         with:
@@ -40,6 +43,7 @@ jobs:
 
       - name: Record installation metadata
         run: |
+          mkdir -p .agents/skills
           cat > .agents/skills/.matt-pocock-install.json <<'JSON'
           {
             "source": "mattpocock/skills",
@@ -61,4 +65,4 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .agents/skills
           git commit -m 'chore: install pinned Matt Pocock skills'
-          git push
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
